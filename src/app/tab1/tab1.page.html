@@ -1,17 +1,42 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title>{{ isAdmin ? 'Upravljanje katalogom' : 'Pretraži knjige' }}</ion-title>
+    <ion-button slot="end" fill="clear" (click)="logout()">Odjava</ion-button>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar [(ngModel)]="searchQuery" (ionInput)="search()" placeholder="Pretraži po naslovu, autoru, žanru..."></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let book of filteredBooks">
+      <ion-label>
+        <h2>{{ book.title }}</h2>
+        <p>{{ book.author }} · {{ book.genre }} · {{ book.year }}</p>
+        <p>{{ book.description }}</p>
+      </ion-label>
+      <ion-button *ngIf="!isAdmin" slot="end" fill="clear" color="primary" (click)="addToLibrary(book)">
+        <ion-icon name="add-circle"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isAdmin" slot="end" fill="clear" (click)="editBook(book)">
+        <ion-icon name="create"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isAdmin" slot="end" fill="clear" color="danger" (click)="deleteBook(book.id!)">
+        <ion-icon name="trash"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <ion-fab *ngIf="isAdmin && books.length === 0" vertical="bottom" horizontal="center" slot="fixed">
+    <ion-fab-button (click)="initCatalogue()" color="success">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/tabs/tab2">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
