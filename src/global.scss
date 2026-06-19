@@ -1,37 +1,146 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+// Importujemo Google Font
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap');
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+* {
+  font-family: 'Lato', sans-serif;
+}
+
+ion-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: #3D2B1F;
+  letter-spacing: 0.3px;
+}
+
+ion-toolbar {
+  --border-color: #E8D5C4;
+  --border-width: 0 0 1px 0;
+  padding: 4px 0;
+}
+
+ion-tab-bar {
+  border-top: 1px solid #E8D5C4;
+  padding: 4px 0;
+}
+
+ion-tab-button {
+  --color: #9E8878;
+  --color-selected: #C4956A;
+  font-family: 'Lato', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+ion-item {
+  --border-color: #F0E8E0;
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+}
+
+ion-button {
+  --border-radius: 10px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 14px;
+}
+
+ion-searchbar {
+  --background: #F0E8E0;
+  --border-radius: 12px;
+  --placeholder-color: #9E8878;
+  --icon-color: #C4956A;
+  --color: #3D2B1F;
+  font-family: 'Lato', sans-serif;
+}
+
+ion-badge {
+  border-radius: 8px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  padding: 4px 10px;
+  letter-spacing: 0.3px;
+}
+
+ion-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(61, 43, 31, 0.08);
+  border: 1px solid #F0E8E0;
+}
+
+ion-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: #3D2B1F;
+}
+
+ion-fab-button {
+  --background: #C4956A;
+  --background-activated: #ac835d;
+  --box-shadow: 0 4px 16px rgba(196, 149, 106, 0.4);
+}
+
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  color: #3D2B1F;
+}
+
+.book-alert {
+  .alert-wrapper {
+    border-radius: 20px;
+    padding: 8px;
+    max-width: 400px;
+  }
+
+  .alert-head {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #F0E8E0;
+  }
+
+  .alert-title {
+    font-family: 'Playfair Display', serif !important;
+    font-size: 20px !important;
+    color: #3D2B1F !important;
+    font-weight: 600 !important;
+  }
+
+  .alert-sub-title {
+    font-size: 13px !important;
+    color: #9E8878 !important;
+    margin-top: 4px !important;
+  }
+
+  .alert-message {
+    font-family: 'Lato', sans-serif !important;
+    font-size: 14px !important;
+    color: #7A6355 !important;
+    line-height: 1.6 !important;
+    white-space: pre-line;
+    padding-top: 12px !important;
+  }
+
+  .alert-button {
+    color: #C4956A !important;
+    font-family: 'Lato', sans-serif !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+  }
+}

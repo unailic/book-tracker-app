@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonIcon, IonSearchbar, IonFab, IonFabButton, IonBadge } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton, AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, trash, create, addCircle } from 'ionicons/icons';
+import { add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline } from 'ionicons/icons';
 import { CatalogueService, CatalogueBook } from '../services/catalogue.service';
 import { AuthService } from '../services/auth.service';
 import { BookService } from '../services/book.service';
@@ -14,7 +14,7 @@ import { BookService } from '../services/book.service';
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonButton, IonIcon, IonSearchbar, IonFab, IonFabButton, IonBadge],
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton],
 })
 export class Tab1Page {
   books: CatalogueBook[] = [];
@@ -26,9 +26,10 @@ export class Tab1Page {
     private catalogueService: CatalogueService,
     private bookService: BookService,
     private authService: AuthService,
+    private alertCtrl: AlertController,
     private router: Router
   ) {
-    addIcons({ add, trash, create, addCircle });
+    addIcons({ add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline });
     this.isAdmin = this.authService.isAdmin();
   }
 
@@ -53,6 +54,38 @@ export class Tab1Page {
       b.author.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
       b.genre.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
+  }
+
+  getGenres(): string[] {
+    const genres = [...new Set(this.filteredBooks.map(b => b.genre))];
+    return genres.sort((a, b) => {
+      if (a === 'Roman') return -1;
+      if (b === 'Roman') return 1;
+      return a.localeCompare(b);
+    });
+  }
+
+  getBooksByGenre(genre: string): CatalogueBook[] {
+    return this.filteredBooks.filter(b => b.genre === genre);
+  }
+
+  getCoverColor(title: string): string {
+    return '#C4956A';
+  }
+
+  getInitials(title: string): string {
+    return title.split(' ').slice(0, 2).map(w => w[0]).join('');
+  }
+
+  async showBookDetails(book: CatalogueBook) {
+    const alert = await this.alertCtrl.create({
+      header: book.title,
+      subHeader: `${book.author} · ${book.year}`,
+      message: `Žanr: ${book.genre}\n\n${book.description}`,
+      cssClass: 'book-alert',
+      buttons: ['Zatvori']
+    });
+    await alert.present();
   }
 
   addToLibrary(book: CatalogueBook) {
@@ -87,6 +120,11 @@ export class Tab1Page {
 
   logout() {
     this.authService.logout();
-    this.router.navigateByUrl('/login');
+    window.location.href = '/login';
+  }
+
+  onImgError(event: any, book: CatalogueBook) {
+    event.target.style.display = 'none';
+    book.coverUrl = undefined;
   }
 }

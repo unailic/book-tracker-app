@@ -1,0 +1,231 @@
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.search-wrapper {
+  padding: 10px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid #E8D5C4;
+    border-radius: 14px;
+    padding: 10px 16px;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(61, 43, 31, 0.06);
+
+    .search-icon {
+      font-size: 18px;
+      color: #C4956A;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      color: #3D2B1F;
+      outline: none;
+
+      &::placeholder {
+        color: #C4B5A8;
+      }
+    }
+  }
+}
+
+.content-wrapper {
+  padding: 20px 20px 80px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.genre-section {
+  margin-bottom: 32px;
+}
+
+.genre-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #F0E8E0;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+}
+
+.book-card {
+  border-radius: 4px 12px 12px 4px;
+  overflow: hidden;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(61, 43, 31, 0.08);
+  border: 1px solid #F0E8E0;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(61, 43, 31, 0.12);
+  }
+}
+
+.cover-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 140%;
+  border-radius: 4px 8px 8px 4px;
+  box-shadow: -6px 0 12px rgba(0,0,0,0.2), inset -3px 0 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+
+  .cover-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cover-initials {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    ion-icon {
+      font-size: 13px;
+    }
+  }
+
+  .add-btn {
+    background: rgba(255, 255, 255, 0.92);
+    color: #C4956A;
+  }
+
+  .edit-btn {
+    background: rgba(255, 255, 255, 0.92);
+    color: #C4956A;
+  }
+
+  .delete-btn {
+    background: rgba(196, 117, 106, 0.92);
+    color: white;
+  }
+}
+
+.card-info {
+  padding: 8px 10px 10px;
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3D2B1F;
+    margin: 0 0 3px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-author {
+    font-size: 10px;
+    color: #9E8878;
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-year {
+    font-size: 10px;
+    color: #C4B5A8;
+    margin: 0;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+
+  ion-icon {
+    font-size: 56px;
+    color: #E8D5C4;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #9E8878;
+    margin: 0 0 16px;
+  }
+}
+
+.init-btn {
+  margin-top: 8px;
+  background: #C4956A;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background: #ac835d;
+  }
+}

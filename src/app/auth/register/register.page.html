@@ -1,27 +1,31 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Registracija</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <div class="page-wrapper">
+    <div class="logo-section">
+      <div class="icon-wrapper">
+        <ion-icon name="book"></ion-icon>
+      </div>
+      <h1 class="app-title">BookSelf</h1>
+      <p class="app-subtitle">Tvoja lična polica knjiga</p>
+    </div>
 
-<ion-content class="ion-padding">
-  <ion-item>
-    <ion-label position="floating">Email</ion-label>
-    <ion-input type="email" [(ngModel)]="email"></ion-input>
-  </ion-item>
+    <div class="form-card">
+      <div class="input-wrapper">
+        <label class="input-label">Email</label>
+        <input class="input-field" type="email" [(ngModel)]="email" placeholder="unesite email" />
+      </div>
 
-  <ion-item>
-    <ion-label position="floating">Lozinka</ion-label>
-    <ion-input type="password" [(ngModel)]="password"></ion-input>
-  </ion-item>
+      <div class="input-wrapper">
+        <label class="input-label">Lozinka</label>
+        <div class="password-wrapper">
+          <input class="input-field" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" placeholder="min. 6 karaktera" />
+          <ion-icon class="eye-icon" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="showPassword = !showPassword"></ion-icon>
+        </div>
+      </div>
 
-  <p *ngIf="errorMessage" style="color: red; padding: 0 16px;">{{ errorMessage }}</p>
+      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-  <ion-button expand="block" (click)="register()" style="margin-top: 16px;">
-    Registruj se
-  </ion-button>
-
-  <ion-button expand="block" fill="clear" (click)="goToLogin()">
-    Već imate nalog? Prijavite se
-  </ion-button>
+      <button class="main-button" (click)="register()">Registruj se</button>
+      <button class="secondary-button" (click)="goToLogin()">Već imate nalog? Prijavite se</button>
+    </div>
+  </div>
 </ion-content>

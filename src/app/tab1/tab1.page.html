@@ -1,38 +1,79 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ isAdmin ? 'Upravljanje katalogom' : 'Pretraži knjige' }}</ion-title>
-    <ion-button slot="end" fill="clear" (click)="logout()">Odjava</ion-button>
+    <ion-title>{{ isAdmin ? 'Katalog' : 'Pretraži knjige' }}</ion-title>
+    <button slot="end" class="logout-btn" (click)="logout()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9E8878" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
   </ion-toolbar>
   <ion-toolbar>
-    <ion-searchbar [(ngModel)]="searchQuery" (ionInput)="search()" placeholder="Pretraži po naslovu, autoru, žanru..."></ion-searchbar>
+    <div class="search-wrapper">
+      <div class="search-bar">
+        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+        <input
+          class="search-input"
+          [(ngModel)]="searchQuery"
+          (input)="search()"
+          placeholder="Pretraži po naslovu, autoru, žanru..." />
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item *ngFor="let book of filteredBooks">
-      <ion-label>
-        <h2>{{ book.title }}</h2>
-        <p>{{ book.author }} · {{ book.genre }} · {{ book.year }}</p>
-        <p>{{ book.description }}</p>
-      </ion-label>
-      <ion-button *ngIf="!isAdmin" slot="end" fill="clear" color="primary" (click)="addToLibrary(book)">
-        <ion-icon name="add-circle"></ion-icon>
-      </ion-button>
-      <ion-button *ngIf="isAdmin" slot="end" fill="clear" (click)="editBook(book)">
-        <ion-icon name="create"></ion-icon>
-      </ion-button>
-      <ion-button *ngIf="isAdmin" slot="end" fill="clear" color="danger" (click)="deleteBook(book.id!)">
-        <ion-icon name="trash"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </ion-list>
+  <div class="content-wrapper">
 
-  <ion-fab *ngIf="isAdmin && books.length === 0" vertical="bottom" horizontal="center" slot="fixed">
-    <ion-fab-button (click)="initCatalogue()" color="success">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <div class="empty-state" *ngIf="filteredBooks.length === 0">
+      <ion-icon name="book-outline"></ion-icon>
+      <p>Katalog je prazan</p>
+      <button *ngIf="isAdmin" class="init-btn" (click)="initCatalogue()">
+        Inicijalizuj katalog
+      </button>
+    </div>
+
+    <ng-container *ngFor="let genre of getGenres()">
+      <div class="genre-section">
+        <h3 class="genre-title">{{ genre }}</h3>
+        <div class="books-grid">
+          <div class="book-card" *ngFor="let book of getBooksByGenre(genre)" (click)="showBookDetails(book)">
+            <div class="cover-wrapper" [style.background]="getCoverColor(book.title)">
+              <img *ngIf="book.coverUrl" [src]="book.coverUrl" [alt]="book.title" class="cover-img" (error)="onImgError($event, book)">
+              <span class="cover-initials" *ngIf="!book.coverUrl">
+                <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="12" y="5" width="58" height="88" rx="4" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+                  <rect x="8" y="5" width="8" height="88" rx="2" fill="rgba(0,0,0,0.2)"/>
+                  <line x1="22" y1="5" x2="22" y2="93" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+                  <line x1="28" y1="30" x2="62" y2="30" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="28" y1="42" x2="62" y2="42" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="28" y1="54" x2="50" y2="54" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+                  <rect x="28" y="65" width="34" height="18" rx="2" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                </svg>
+              </span>
+              <div class="card-actions" (click)="$event.stopPropagation()">
+                <button *ngIf="!isAdmin" class="action-btn add-btn" (click)="addToLibrary(book)">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                </button>
+                <button *ngIf="isAdmin" class="action-btn edit-btn" (click)="editBook(book)">
+                  <ion-icon name="create-outline"></ion-icon>
+                </button>
+                <button *ngIf="isAdmin" class="action-btn delete-btn" (click)="deleteBook(book.id!)">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+            <div class="card-info">
+              <p class="card-title">{{ book.title }}</p>
+              <p class="card-author">{{ book.author }}</p>
+              <p class="card-year">{{ book.year }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
 
   <ion-fab *ngIf="isAdmin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button routerLink="/tabs/tab2">
