@@ -1,35 +1,37 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton, AlertController } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton, IonModal, IonButton, AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline } from 'ionicons/icons';
+import { add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline, closeOutline } from 'ionicons/icons';
 import { CatalogueService, CatalogueBook } from '../services/catalogue.service';
 import { AuthService } from '../services/auth.service';
 import { BookService } from '../services/book.service';
+import { Book } from '../models/book.model';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton],
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton, IonModal, IonButton],
 })
 export class Tab1Page {
   books: CatalogueBook[] = [];
   filteredBooks: CatalogueBook[] = [];
   searchQuery = '';
   isAdmin = false;
+  showModal = false;
+  editingBook: CatalogueBook = { title: '', author: '', genre: '', description: '', year: new Date().getFullYear() };
+  editingBookId = '';
 
   constructor(
     private catalogueService: CatalogueService,
     private bookService: BookService,
     private authService: AuthService,
     private alertCtrl: AlertController,
-    private router: Router
   ) {
-    addIcons({ add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline });
+    addIcons({ add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline, closeOutline });
     this.isAdmin = this.authService.isAdmin();
   }
 
@@ -88,28 +90,83 @@ export class Tab1Page {
     await alert.present();
   }
 
-  addToLibrary(book: CatalogueBook) {
-    const userBook = {
-      catalogueBookId: book.id!,
-      title: book.title,
-      author: book.author,
-      genre: book.genre,
-      status: 'planned' as const,
-      rating: undefined,
-      notes: '',
-      userId: this.authService.getUserId() || ''
-    };
-    this.bookService.addBook(userBook).subscribe(() => {
-      alert(`"${book.title}" dodata u vašu biblioteku!`);
+  openAddModal() {
+    this.editingBook = { title: '', author: '', genre: '', description: '', year: new Date().getFullYear() };
+    this.editingBookId = '';
+    this.showModal = true;
+  }
+
+  openEditModal(book: CatalogueBook) {
+    this.editingBook = { ...book };
+    this.editingBookId = book.id!;
+    this.showModal = true;
+  }
+
+  saveBook() {
+    if (this.editingBookId) {
+      this.catalogueService.updateBook(this.editingBookId, this.editingBook).subscribe(() => {
+        this.showModal = false;
+        this.loadBooks();
+      });
+    } else {
+      this.catalogueService.addBook(this.editingBook).subscribe(() => {
+        this.showModal = false;
+        this.loadBooks();
+      });
+    }
+  }
+
+  async deleteBook(id: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Brisanje knjige',
+      message: 'Da li ste sigurni da želite da obrišete ovu knjigu iz kataloga?',
+      cssClass: 'book-alert',
+      buttons: [
+        { text: 'Otkaži', role: 'cancel' },
+        { text: 'Obriši', role: 'destructive', cssClass: 'delete-button',
+          handler: () => this.catalogueService.deleteBook(id).subscribe(() => this.loadBooks())
+        }
+      ]
     });
+    await alert.present();
   }
 
-  editBook(book: CatalogueBook) {
-    this.router.navigate(['/tabs/tab2'], { state: { book } });
-  }
+  async addToLibrary(book: CatalogueBook) {
+    const alreadyAdded = this.bookService.getUserBooks().some(b => b.catalogueBookId === book.id);
+    
+    if (alreadyAdded) {
+      const alert = await this.alertCtrl.create({
+        header: 'Već u biblioteci',
+        message: `"${book.title}" je već u vašoj biblioteci.`,
+        cssClass: 'book-alert',
+        buttons: ['U redu']
+      });
+      await alert.present();
+      return;
+    }
 
-  deleteBook(id: string) {
-    this.catalogueService.deleteBook(id).subscribe(() => this.loadBooks());
+    const alert = await this.alertCtrl.create({
+      header: 'Dodaj u biblioteku',
+      message: `Da li želite da dodate "${book.title}" u vašu biblioteku?`,
+      cssClass: 'book-alert',
+      buttons: [
+        { text: 'Otkaži', role: 'cancel' },
+        { text: 'Dodaj', handler: () => {
+          const userBook = {
+            catalogueBookId: book.id!,
+            title: book.title,
+            author: book.author,
+            genre: book.genre,
+            status: 'planned' as const,
+            rating: undefined,
+            notes: '',
+            userId: this.authService.getUserId() || ''
+          };
+          this.bookService.addBook(userBook).subscribe();
+        }}
+      ]
+    });
+    await alert.present();
   }
 
   initCatalogue() {

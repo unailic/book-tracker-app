@@ -144,3 +144,11 @@ h2 {
     letter-spacing: 0.5px !important;
   }
 }
+
+ion-modal {
+  --border-radius: 20px;
+  
+  ion-toolbar {
+    --border-radius: 0;
+  }
+}

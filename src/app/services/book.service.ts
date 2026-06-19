@@ -17,14 +17,23 @@ export class BookService {
     return `${this.dbUrl}/users/${userId}/books`;
   }
 
+  private cachedBooks: Book[] = [];
+
   getBooks(): Observable<Book[]> {
     const token = this.authService.getToken();
-    return this.http.get<{ [key: string]: Book }>(`${this.getUrl()}.json?auth=${token}`).pipe(
+    const userId = this.authService.getUserId();
+    return this.http.get<{ [key: string]: Book }>(`${this.dbUrl}/users/${userId}/books.json?auth=${token}`).pipe(
       map(data => {
         if (!data) return [];
-        return Object.keys(data).map(key => ({ ...data[key], id: key }));
+        const books = Object.keys(data).map(key => ({ ...data[key], id: key }));
+        this.cachedBooks = books;
+        return books;
       })
     );
+  }
+
+  getUserBooks(): Book[] {
+    return this.cachedBooks;
   }
 
   addBook(book: Omit<Book, 'id'>): Observable<{ name: string }> {

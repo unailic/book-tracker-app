@@ -1,95 +1,180 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ isAdmin ? (editingCatalogueId ? 'Izmeni knjigu' : 'Dodaj knjigu') : 'Moje knjige' }}</ion-title>
+    <ion-title>{{ isAdmin ? 'Korisnici' : 'Moje knjige' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <!-- ADMIN -->
+<ion-content>
+  <!-- ADMIN - samo korisnici -->
   <ng-container *ngIf="isAdmin">
-    <ion-item>
-      <ion-label position="floating">Naslov</ion-label>
-      <ion-input [(ngModel)]="catalogueBook.title"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Autor</ion-label>
-      <ion-input [(ngModel)]="catalogueBook.author"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Žanr</ion-label>
-      <ion-input [(ngModel)]="catalogueBook.genre"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Godina</ion-label>
-      <ion-input type="number" [(ngModel)]="catalogueBook.year"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Opis</ion-label>
-      <ion-textarea [(ngModel)]="catalogueBook.description" rows="4"></ion-textarea>
-    </ion-item>
-    <ion-button expand="block" (click)="saveCatalogueBook()" style="margin-top: 16px;">
-      {{ editingCatalogueId ? 'Sačuvaj izmene' : 'Dodaj u katalog' }}
-    </ion-button>
-
-    <h2 style="padding: 16px 0 8px;">Korisnici</h2>
-    <ion-list>
-      <ion-item *ngFor="let user of users">
-        <ion-label>
-          <h3>{{ user.email }}</h3>
-          <p>{{ user.role }}</p>
-        </ion-label>
-        <ion-button slot="end" fill="clear" color="danger" (click)="deleteUser(user.id!)">
-          <ion-icon name="trash"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </ion-list>
+    <div class="form-wrapper">
+      <div class="users-list" *ngIf="users.length > 0">
+        <div class="user-item" *ngFor="let user of users">
+          <div class="user-info">
+            <p class="user-email">{{ user.email }}</p>
+            <p class="user-role">{{ user.role }}</p>
+          </div>
+          <button class="delete-user-btn" (click)="deleteUser(user.id!)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="users.length === 0">
+        <p>Nema registrovanih korisnika</p>
+      </div>
+    </div>
   </ng-container>
 
-  <!-- KORISNIK -->
-  <ng-container *ngIf="!isAdmin">
-    <ion-list *ngIf="!isEditing">
-      <ion-item *ngFor="let book of userBooks">
-        <ion-label>
-          <h2>{{ book.title }}</h2>
-          <p>{{ book.author }}</p>
-          <p *ngIf="book.rating">Ocena: {{ book.rating }}/5</p>
-          <p *ngIf="book.notes">{{ book.notes }}</p>
-        </ion-label>
-        <ion-badge slot="end" [color]="book.status === 'finished' ? 'success' : book.status === 'reading' ? 'warning' : 'medium'">
-          {{ getStatusLabel(book.status) }}
-        </ion-badge>
-        <ion-button slot="end" fill="clear" (click)="editUserBook(book)">
-          <ion-icon name="create"></ion-icon>
-        </ion-button>
-        <ion-button slot="end" fill="clear" color="danger" (click)="deleteUserBook(book.id!)">
-          <ion-icon name="trash"></ion-icon>
-        </ion-button>
-      </ion-item>
-    </ion-list>
+  <!-- KORISNIK - LISTA -->
+  <ng-container *ngIf="!isAdmin && !isEditing">
+    <div class="books-list">
+      <div class="empty-state" *ngIf="userBooks.length === 0">
+        <svg width="56" height="56" viewBox="0 0 80 100" fill="none">
+          <rect x="12" y="5" width="58" height="88" rx="4" fill="#E8D5C4" stroke="#C4956A" stroke-width="2"/>
+          <rect x="8" y="5" width="8" height="88" rx="2" fill="#C4956A" opacity="0.4"/>
+          <line x1="28" y1="35" x2="62" y2="35" stroke="#C4956A" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+          <line x1="28" y1="48" x2="62" y2="48" stroke="#C4956A" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+          <line x1="28" y1="61" x2="48" y2="61" stroke="#C4956A" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+        <p>Vaša biblioteka je prazna</p>
+        <span>Dodajte knjige iz kataloga</span>
+      </div>
 
-    <ng-container *ngIf="isEditing">
-      <ion-item>
-        <ion-label position="floating">Naslov</ion-label>
-        <ion-input [(ngModel)]="book.title" [readonly]="true"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>Status</ion-label>
-        <ion-select [(ngModel)]="book.status">
-          <ion-select-option value="planned">Planirana</ion-select-option>
-          <ion-select-option value="reading">Čitam</ion-select-option>
-          <ion-select-option value="finished">Pročitana</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Ocena (1-5)</ion-label>
-        <ion-input type="number" [(ngModel)]="book.rating" min="1" max="5"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="floating">Beleške</ion-label>
-        <ion-textarea [(ngModel)]="book.notes" rows="4"></ion-textarea>
-      </ion-item>
-      <ion-button expand="block" (click)="saveUserBook()" style="margin-top: 16px;">Sačuvaj</ion-button>
-      <ion-button expand="block" fill="clear" (click)="isEditing = false">Otkaži</ion-button>
-    </ng-container>
+      <ng-container *ngIf="readingBooks.length > 0">
+        <div class="section-header">
+          <span class="section-dot reading-dot"></span>
+          <span class="section-label">Trenutno čitam</span>
+          <span class="section-count">{{ readingBooks.length }}</span>
+        </div>
+        <div class="book-item" *ngFor="let book of readingBooks">
+          <div class="book-status-bar status-reading"></div>
+          <div class="book-details">
+            <p class="book-title">{{ book.title }}</p>
+            <p class="book-author">{{ book.author }}</p>
+            <div class="book-meta">
+              <span class="rating" *ngIf="book.rating">★ {{ book.rating }}/5</span>
+            </div>
+            <p class="book-notes" *ngIf="book.notes">{{ book.notes }}</p>
+          </div>
+          <div class="book-actions">
+            <button class="action-btn edit-btn" (click)="editUserBook(book)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4956A" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="action-btn delete-btn" (click)="deleteUserBook(book.id!)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="plannedBooks.length > 0">
+        <div class="section-header">
+          <span class="section-dot planned-dot"></span>
+          <span class="section-label">Planirane</span>
+          <span class="section-count">{{ plannedBooks.length }}</span>
+        </div>
+        <div class="book-item" *ngFor="let book of plannedBooks">
+          <div class="book-status-bar status-planned"></div>
+          <div class="book-details">
+            <p class="book-title">{{ book.title }}</p>
+            <p class="book-author">{{ book.author }}</p>
+            <p class="book-notes" *ngIf="book.notes">{{ book.notes }}</p>
+          </div>
+          <div class="book-actions">
+            <button class="action-btn edit-btn" (click)="editUserBook(book)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4956A" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="action-btn delete-btn" (click)="deleteUserBook(book.id!)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="finishedBooks.length > 0">
+        <div class="section-header">
+          <span class="section-dot finished-dot"></span>
+          <span class="section-label">Pročitane</span>
+          <span class="section-count">{{ finishedBooks.length }}</span>
+        </div>
+        <div class="book-item" *ngFor="let book of finishedBooks">
+          <div class="book-status-bar status-finished"></div>
+          <div class="book-details">
+            <p class="book-title">{{ book.title }}</p>
+            <p class="book-author">{{ book.author }}</p>
+            <div class="book-meta">
+              <span class="rating" *ngIf="book.rating">★ {{ book.rating }}/5</span>
+            </div>
+            <p class="book-notes" *ngIf="book.notes">{{ book.notes }}</p>
+          </div>
+          <div class="book-actions">
+            <button class="action-btn edit-btn" (click)="editUserBook(book)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4956A" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="action-btn delete-btn" (click)="deleteUserBook(book.id!)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <!-- KORISNIK - EDIT FORMA -->
+  <ng-container *ngIf="!isAdmin && isEditing">
+    <div class="form-wrapper">
+      <div class="form-card">
+        <div class="editing-book-title">{{ book.title }}</div>
+        <div class="editing-book-author">{{ book.author }}</div>
+
+        <div class="input-group" style="margin-top: 20px;">
+          <label class="input-label">Status</label>
+          <div class="status-selector">
+            <button class="status-option" [class.active]="book.status === 'planned'" (click)="book.status = 'planned'">Planirana</button>
+            <button class="status-option" [class.active]="book.status === 'reading'" (click)="book.status = 'reading'">Čitam</button>
+            <button class="status-option" [class.active]="book.status === 'finished'" (click)="book.status = 'finished'">Pročitana</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Ocena</label>
+          <div class="star-selector">
+            <button *ngFor="let star of [1,2,3,4,5]" class="star-btn" [class.active]="book.rating >= star" (click)="book.rating = star">★</button>
+            <button class="clear-rating-btn" *ngIf="book.rating" (click)="book.rating = undefined">✕</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Beleške</label>
+          <textarea class="input-field textarea-field" [(ngModel)]="book.notes" rows="4" placeholder="Vaše beleške o knjizi..."></textarea>
+        </div>
+
+        <button class="main-button" (click)="saveUserBook()">Sačuvaj</button>
+        <button class="secondary-button" (click)="isEditing = false">Otkaži</button>
+      </div>
+    </div>
   </ng-container>
 </ion-content>
