@@ -2,10 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { IonHeader, IonToolbar, IonTitle, IonContent, AlertController } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon, AlertController } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { logOutOutline } from 'ionicons/icons';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../services/auth.service';
-import { CatalogueService } from '../services/catalogue.service';
 import { BookService } from '../services/book.service';
 import { Book } from '../models/book.model';
 
@@ -14,7 +16,7 @@ import { Book } from '../models/book.model';
   templateUrl: 'tab3.page.html',
   styleUrls: ['tab3.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent],
+  imports: [CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonIcon],
 })
 export class Tab3Page {
   isAdmin = false;
@@ -27,7 +29,13 @@ export class Tab3Page {
   tempUsername = '';
   tempAvatarUrl = '';
 
-  // korisnik statistike
+  // promena lozinke
+  isChangingPassword = false;
+  newPassword = '';
+  confirmPassword = '';
+  passwordError = '';
+
+  // statistike — samo za usera
   books: Book[] = [];
   get totalBooks() { return this.books.length; }
   get finishedBooks() { return this.books.filter(b => b.status === 'finished').length; }
@@ -45,28 +53,21 @@ export class Tab3Page {
     return rated.filter(b => b.rating === maxRating);
   }
 
-  // admin statistike
-  totalUsers = 0;
-  totalCatalogueBooks = 0;
-  popularBooks: { title: string, count: number }[] = [];
-
   constructor(
     private authService: AuthService,
     private bookService: BookService,
-    private catalogueService: CatalogueService,
     private http: HttpClient,
+    private router: Router,
     private alertCtrl: AlertController
   ) {
+    addIcons({ logOutOutline });
     this.isAdmin = this.authService.isAdmin();
-    this.email = localStorage.getItem('email') || '';
   }
 
   ionViewWillEnter() {
-    if (this.isAdmin) {
-      this.loadAdminStats();
-    } else {
+    this.loadProfile();
+    if (!this.isAdmin) {
       this.bookService.getBooks().subscribe(books => this.books = books);
-      this.loadProfile();
     }
   }
 
@@ -87,17 +88,14 @@ export class Tab3Page {
     this.tempUsername = this.username;
     this.tempAvatarUrl = this.avatarUrl;
     this.isEditingProfile = true;
+    this.isChangingPassword = false;
   }
 
   saveProfile() {
     const token = this.authService.getToken();
     const userId = this.authService.getUserId();
-    const profile = {
-      email: this.email,
-      role: 'user',
-      username: this.tempUsername,
-      avatarUrl: this.tempAvatarUrl
-    };
+    const role = this.isAdmin ? 'admin' : 'user';
+    const profile = { email: this.email, role, username: this.tempUsername, avatarUrl: this.tempAvatarUrl };
     this.http.patch(`${environment.firebaseDatabaseUrl}/users/${userId}/profile.json?auth=${token}`, profile)
       .subscribe(() => {
         this.username = this.tempUsername;
@@ -106,39 +104,62 @@ export class Tab3Page {
       });
   }
 
+  openChangePassword() {
+    this.isChangingPassword = true;
+    this.isEditingProfile = false;
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.passwordError = '';
+  }
+
+  async savePassword() {
+    // Validacija
+    if (this.newPassword.length < 6) {
+      this.passwordError = 'Lozinka mora imati najmanje 6 karaktera.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.passwordError = 'Lozinke se ne poklapaju.';
+      return;
+    }
+
+    // Firebase endpoint za promenu lozinke
+    const token = this.authService.getToken();
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${environment.firebaseApiKey}`;
+
+    this.http.post(url, {
+      idToken: token,
+      password: this.newPassword,
+      returnSecureToken: true
+    }).subscribe({
+      next: async () => {
+        this.isChangingPassword = false;
+        const alert = await this.alertCtrl.create({
+          header: 'Uspešno',
+          message: 'Lozinka je promenjena.',
+          buttons: ['OK']
+        });
+        await alert.present();
+      },
+      error: async () => {
+        const alert = await this.alertCtrl.create({
+          header: 'Greška',
+          message: 'Promena lozinke nije uspela. Pokušajte ponovo.',
+          buttons: ['OK']
+        });
+        await alert.present();
+      }
+    });
+  }
+
   getInitials(): string {
     if (this.username) return this.username.slice(0, 2).toUpperCase();
     if (this.email) return this.email.slice(0, 2).toUpperCase();
     return '??';
   }
 
-  loadAdminStats() {
-    const token = this.authService.getToken();
-    this.http.get<{ [key: string]: any }>(
-      `${environment.firebaseDatabaseUrl}/users.json?auth=${token}`
-    ).subscribe(data => {
-      if (!data) return;
-      this.totalUsers = Object.values(data).filter((user: any) => user?.profile?.role !== 'admin').length;
-
-      const bookCount: { [title: string]: number } = {};
-      Object.values(data).forEach((user: any) => {
-        if (user.books) {
-          Object.values(user.books).forEach((book: any) => {
-            if (book.title) {
-              bookCount[book.title] = (bookCount[book.title] || 0) + 1;
-            }
-          });
-        }
-      });
-
-      this.popularBooks = Object.entries(bookCount)
-        .map(([title, count]) => ({ title, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-    });
-
-    this.catalogueService.getBooks().subscribe(books => {
-      this.totalCatalogueBooks = books.length;
-    });
+  logout() {
+    this.authService.logout();
+    this.router.navigateByUrl('/login');
   }
 }

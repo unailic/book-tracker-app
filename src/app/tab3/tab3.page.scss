@@ -20,9 +20,7 @@ ion-content {
   margin-bottom: 20px;
 }
 
-.avatar-container {
-  flex-shrink: 0;
-}
+.avatar-container { flex-shrink: 0; }
 
 .avatar-img {
   width: 72px;
@@ -47,9 +45,7 @@ ion-content {
   border: 2px solid #C4956A;
 }
 
-.profile-info {
-  flex: 1;
-}
+.profile-info { flex: 1; }
 
 .profile-username {
   font-family: 'Playfair Display', serif;
@@ -62,6 +58,15 @@ ion-content {
 .profile-email {
   font-size: 13px;
   color: #9E8878;
+  margin: 0 0 4px;
+}
+
+.profile-role {
+  font-size: 11px;
+  color: #C4956A;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -87,9 +92,28 @@ ion-content {
   margin-bottom: 20px;
 }
 
-.input-group {
-  margin-bottom: 16px;
+.form-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #3D2B1F;
+  margin: 0 0 14px;
 }
+
+.optional-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #C4B5A8;
+}
+
+.form-divider {
+  height: 1px;
+  background: #F0E8E0;
+  margin: 20px 0;
+}
+
+.input-group { margin-bottom: 16px; }
 
 .input-label {
   display: block;
@@ -116,6 +140,12 @@ ion-content {
 
   &:focus { border-color: #C4956A; }
   &::placeholder { color: #C4B5A8; }
+}
+
+.error-text {
+  color: #C4756A;
+  font-size: 12px;
+  margin: 0 0 10px;
 }
 
 .main-button {
@@ -146,9 +176,7 @@ ion-content {
   padding: 8px;
 }
 
-.stats-section {
-  margin-top: 8px;
-}
+.stats-section { margin-top: 8px; }
 
 .stats-title {
   font-family: 'Playfair Display', serif;
@@ -251,9 +279,7 @@ ion-content {
   margin: 0;
 }
 
-.popular-section {
-  margin-top: 8px;
-}
+.popular-section { margin-top: 8px; }
 
 .popular-item {
   display: flex;

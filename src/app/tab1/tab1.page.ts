@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonFab, IonFabButton, IonModal, IonButton, AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline, closeOutline } from 'ionicons/icons';
+import { add, trashOutline, createOutline, addCircleOutline, bookOutline, searchOutline, closeOutline } from 'ionicons/icons';
 import { CatalogueService, CatalogueBook } from '../services/catalogue.service';
 import { AuthService } from '../services/auth.service';
 import { BookService } from '../services/book.service';
@@ -31,7 +31,7 @@ export class Tab1Page {
     private authService: AuthService,
     private alertCtrl: AlertController,
   ) {
-    addIcons({ add, trashOutline, createOutline, addCircleOutline, logOutOutline, bookOutline, searchOutline, closeOutline });
+    addIcons({ add, trashOutline, createOutline, addCircleOutline, bookOutline, searchOutline, closeOutline });
     this.isAdmin = this.authService.isAdmin();
   }
 
@@ -175,13 +175,9 @@ export class Tab1Page {
     });
   }
 
-  logout() {
-    this.authService.logout();
-    window.location.href = '/login';
-  }
-
   onImgError(event: any, book: CatalogueBook) {
     event.target.style.display = 'none';
     book.coverUrl = undefined;
   }
 }
+

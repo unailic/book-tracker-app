@@ -21,9 +21,6 @@
           <ion-icon class="eye-icon" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="showPassword = !showPassword"></ion-icon>
         </div>
       </div>
-
-      <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-
       <button class="main-button" (click)="login()">Prijavi se</button>
       <button class="secondary-button" (click)="goToRegister()">Nemate nalog? Registrujte se</button>
     </div>

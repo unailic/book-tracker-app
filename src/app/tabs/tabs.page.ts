@@ -3,7 +3,7 @@ import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angu
 import { addIcons } from 'ionicons';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { bookOutline, libraryOutline, barChartOutline, personCircleOutline } from 'ionicons/icons';
+import { bookOutline, libraryOutline, barChartOutline, statsChartOutline, personCircleOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -16,7 +16,8 @@ export class TabsPage {
   isAdmin = false;
 
   constructor(private authService: AuthService) {
-    addIcons({ bookOutline, libraryOutline, barChartOutline, personCircleOutline });
+    addIcons({ bookOutline, libraryOutline, statsChartOutline, barChartOutline, personCircleOutline });
     this.isAdmin = this.authService.isAdmin();
   }
 }
+

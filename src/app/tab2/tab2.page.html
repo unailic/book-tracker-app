@@ -1,36 +1,67 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ isAdmin ? 'Korisnici' : 'Moje knjige' }}</ion-title>
+    <ion-title>{{ isAdmin ? 'Pregled sistema' : 'Moje knjige' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <!-- ADMIN - samo korisnici -->
+
+  <!-- ===== ADMIN ===== -->
   <ng-container *ngIf="isAdmin">
     <div class="form-wrapper">
-      <div class="users-list" *ngIf="users.length > 0">
-        <div class="user-item" *ngFor="let user of users">
-          <div class="user-info">
-            <p class="user-email">{{ user.email }}</p>
-            <p class="user-role">{{ user.role }}</p>
+
+      <!-- Statistike -->
+      <div class="stats-section">
+        <h3 class="section-title">Statistike</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-number">{{ totalUsers }}</p>
+            <p class="stat-label">Korisnika</p>
           </div>
-          <button class="delete-user-btn" (click)="deleteUser(user.id!)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6"/>
-              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-            </svg>
-          </button>
+          <div class="stat-card">
+            <p class="stat-number">{{ totalCatalogueBooks }}</p>
+            <p class="stat-label">Knjiga u katalogu</p>
+          </div>
+        </div>
+
+        <div class="popular-section" *ngIf="popularBooks.length > 0">
+          <h4 class="subsection-title">Najpopularnije knjige</h4>
+          <div class="popular-item" *ngFor="let book of popularBooks; let i = index">
+            <span class="popular-rank">{{ i + 1 }}</span>
+            <span class="popular-title">{{ book.title }}</span>
+            <span class="popular-count">{{ book.count }} ×</span>
+          </div>
         </div>
       </div>
-      <div class="empty-state" *ngIf="users.length === 0">
-        <p>Nema registrovanih korisnika</p>
+
+      <!-- Korisnici -->
+      <div class="users-section">
+        <h3 class="section-title">Korisnici</h3>
+        <div class="users-list" *ngIf="users.length > 0">
+          <div class="user-item" *ngFor="let user of users">
+            <div class="user-info">
+              <p class="user-email">{{ user.email }}</p>
+              <p class="user-role">{{ user.role }}</p>
+            </div>
+            <button class="delete-user-btn" (click)="deleteUser(user.id!)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4756A" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="users.length === 0">
+          <p>Nema registrovanih korisnika</p>
+        </div>
       </div>
+
     </div>
   </ng-container>
 
-  <!-- KORISNIK - LISTA -->
+  <!-- ===== USER - LISTA ===== -->
   <ng-container *ngIf="!isAdmin && !isEditing">
     <div class="books-list">
       <div class="empty-state" *ngIf="userBooks.length === 0">
@@ -143,7 +174,7 @@
     </div>
   </ng-container>
 
-  <!-- KORISNIK - EDIT FORMA -->
+  <!-- ===== USER - EDIT FORMA ===== -->
   <ng-container *ngIf="!isAdmin && isEditing">
     <div class="form-wrapper">
       <div class="form-card">
@@ -177,4 +208,5 @@
       </div>
     </div>
   </ng-container>
+
 </ion-content>

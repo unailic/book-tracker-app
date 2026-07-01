@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, forkJoin, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-
+import { INITIAL_BOOKS } from './seed-data';
+ 
 export interface CatalogueBook {
   id?: string;
   title: string;
@@ -13,52 +15,41 @@ export interface CatalogueBook {
   year: number;
   coverUrl?: string;
 }
-
-const INITIAL_BOOKS: Omit<CatalogueBook, 'id'>[] = [
-  { title: 'Majstor i Margarita', author: 'Mihail Bulgakov', genre: 'Roman', description: 'Majstorska satira o poseti đavola Moskvi koja razotkriva ljudske slabosti i licemerje.', year: 1967, coverUrl: 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1327867963i/117833.jpg' },
-  { title: '1984', author: 'Džordž Orvel', genre: 'Distopija', description: 'Zastrašujuća vizija totalitarnog društva u kojem su sloboda misli i privatnost ukinuti.', year: 1949, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg' },
-  { title: 'Mali Princ', author: 'Antoan de Sent Egziperi', genre: 'Bajka', description: 'Poetska i filozofska priča o dečaku sa asteroida koja nas uči o ljubavi i suštini života.', year: 1943, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780156012195-L.jpg' },
-  { title: 'Zločin i kazna', author: 'Fjodor Dostojevski', genre: 'Roman', description: 'Duboka psihološka studija o griži savesti, ubistvu i potrazi za moralnim iskupljenjem.', year: 1866, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780140449136-L.jpg' },
-  { title: 'Sto godina samoće', author: 'Gabrijel Garsija Markes', genre: 'Magični realizam', description: 'Epska saga o usponu i padu porodice Buendía ispisana kroz prizmu magičnog realizma.', year: 1967, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780060929794-L.jpg' },
-  { title: 'Proces', author: 'Franc Kafka', genre: 'Roman', description: 'Uznemirujuća priča o pojedincu uhvaćenom u apsurdne mehanizme bezlične birokratije.', year: 1925, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780805209990-L.jpg' },
-  { title: 'Stranac', author: 'Alber Kami', genre: 'Filozofski roman', description: 'Istraživanje egzistencijalnog apsurda kroz lik čoveka koji se otuđio od društvenih normi.', year: 1942, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780679720201-L.jpg' },
-  { title: 'Braća Karamazovi', author: 'Fjodor Dostojevski', genre: 'Roman', description: 'Kompleksna drama o veri, moralu i sukobu generacija unutar jedne disfunkcionalne porodice.', year: 1880, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780374528379-L.jpg' },
-  { title: 'Gospodar prstenova', author: 'Dž. R. R. Tolkin', genre: 'Fantastika', description: 'Epska avantura o borbi dobra i zla u fantastičnom svetu Međuzemlja.', year: 1954, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780618640157-L.jpg' },
-  { title: 'Hari Poter i Kamen mudraca', author: 'Dž. K. Rouling', genre: 'Fantastika', description: 'Priča o odrastanju dečaka čarobnjaka koji otkriva tajne škole magije.', year: 1997, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780439708180-L.jpg' },
-  { title: 'Slika Dorijana Greja', author: 'Oskar Vajld', genre: 'Roman', description: 'Filozofska priča o narcizmu, večitoj mladosti i neizbežnom moralnom propadanju duše.', year: 1890, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780141439570-L.jpg' },
-  { title: 'Na Drini ćuprija', author: 'Ivo Andrić', genre: 'Istorijski roman', description: 'Hronika vekova kroz priču o mostu koji postaje svedok sudbina ljudi u vihoru istorije.', year: 1945, coverUrl: 'https://laguna.oozmi-cdn.com/images/63b14fbf-e2ff-4c2f-a6a9-f3df381f9895/Na-Drini-cuprija-w560.avif' },
-  { title: 'Derviš i smrt', author: 'Meša Selimović', genre: 'Roman', description: 'Duboko emotivna drama o unutrašnjem sukobu vere, pravde i ljudske patnje.', year: 1966, coverUrl: 'https://delfi.rs/_img/artikli/2014/10/dervis_i_smrt_vv.jpg' },
-  { title: 'Seobe', author: 'Miloš Crnjanski', genre: 'Istorijski roman', description: 'Lirična saga o lutanju srpskog naroda u 18. veku u potrazi za smislom i domom.', year: 1929, coverUrl: 'https://covers.openlibrary.org/b/isbn/9788607001651-L.jpg' },
-  { title: 'Ana Karenjina', author: 'Lav Tolstoj', genre: 'Roman', description: 'Tragična povest o strastvenoj ljubavi i uništenju pod teretom krutih društvenih normi.', year: 1877, coverUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLfgDKZQeIRKlP0zlN69Ul6Z_C9UGcqkUByBnFvflBuA&s=10' },
-  { title: 'Na zapadu ništa novo', author: 'Erih Marija Remark', genre: 'Roman', description: 'Potresna priča o iskustvima vojnika u Prvom svetskom ratu.', year: 1929, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780449213940-L.jpg' },
-  { title: 'Lovac u žitu', author: 'Džerom Dejvid Selindžer', genre: 'Roman', description: 'Priča o odrastanju i otuđenju tinejdžera Holdena Kolfilda.', year: 1951, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780316769174-L.jpg' },
-  { title: 'Ubiti pticu rugalicu', author: 'Harper Li', genre: 'Roman', description: 'Priča o rasnoj nepravdi i moralnom odrastanju na američkom Jugu.', year: 1960, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780061743528-L.jpg' },
-  { title: 'Veliki Getsbi', author: 'Frensis Skot Ficdžerald', genre: 'Roman', description: 'Kritika američkog sna kroz priču o bogatstvu i neostvarenoj ljubavi.', year: 1925, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg' },
-  { title: 'Don Kihot', author: 'Migel de Servantes', genre: 'Roman', description: 'Priča o plemiću koji gubi razum i pokušava da postane vitez lutalica.', year: 1605, coverUrl: 'https://covers.openlibrary.org/b/isbn/9780060934347-L.jpg' },
-];
-
+ 
 @Injectable({ providedIn: 'root' })
 export class CatalogueService {
   private dbUrl = environment.firebaseDatabaseUrl;
-
+ 
   constructor(private http: HttpClient, private authService: AuthService) {}
-
+ 
   private getAuthParams(): string {
     return `?auth=${this.authService.getToken()}`;
   }
-
+ 
+  // Popunjava katalog početnim setom knjiga.
+  // Pre dodavanja proveravamo da li katalog već ima podatke,
+  // čime sprečavamo duplikate ako se metoda pozove više puta.
   initCatalogue(): Observable<any> {
-    const promises = INITIAL_BOOKS.map(book =>
-      this.http.post(`${this.dbUrl}/catalogue.json${this.getAuthParams()}`, book).toPromise()
-    );
     return new Observable(observer => {
-      Promise.all(promises).then(() => {
-        observer.next(true);
-        observer.complete();
-      }).catch(err => observer.error(err));
+      this.getBooks().subscribe({
+        next: existingBooks => {
+          if (existingBooks.length > 0) {
+            observer.error(new Error('Katalog već sadrži knjige.'));
+            return;
+          }
+          const requests = INITIAL_BOOKS.map(book =>
+            this.http.post(`${this.dbUrl}/catalogue.json${this.getAuthParams()}`, book)
+          );
+          forkJoin(requests).subscribe({
+            next: () => { observer.next(true); observer.complete(); },
+            error: err => observer.error(err)
+          });
+        },
+        error: err => observer.error(err)
+      });
     });
   }
-
+ 
   getBooks(): Observable<CatalogueBook[]> {
     return this.http.get<{ [key: string]: CatalogueBook }>(`${this.dbUrl}/catalogue.json${this.getAuthParams()}`).pipe(
       map(data => {
@@ -67,19 +58,61 @@ export class CatalogueService {
       })
     );
   }
-
+ 
   addBook(book: Omit<CatalogueBook, 'id'>): Observable<{ name: string }> {
     return this.http.post<{ name: string }>(`${this.dbUrl}/catalogue.json${this.getAuthParams()}`, book);
   }
-
+ 
   updateBook(id: string, book: Partial<CatalogueBook>): Observable<CatalogueBook> {
     return this.http.patch<CatalogueBook>(`${this.dbUrl}/catalogue/${id}.json${this.getAuthParams()}`, book);
   }
-
+ 
+  // Briše knjigu iz kataloga I sve reference na nju u korisničkim bibliotekama
+  // (cascade delete) — sprečava "duhove" sa nepostojećim catalogueBookId.
   deleteBook(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.dbUrl}/catalogue/${id}.json${this.getAuthParams()}`);
+    return this.removeFromAllUserLibraries(id).pipe(
+      switchMap(() =>
+        this.http.delete<void>(`${this.dbUrl}/catalogue/${id}.json${this.getAuthParams()}`)
+      )
+    );
   }
-
+ 
+  // Prolazi kroz SVE korisnike, nalazi knjige čiji catalogueBookId
+  // odgovara obrisanoj knjizi iz kataloga, i briše ih iz biblioteka.
+  private removeFromAllUserLibraries(catalogueBookId: string): Observable<any> {
+    return this.http.get<{ [userId: string]: { books?: { [bookId: string]: { catalogueBookId?: string } } } }>(
+      `${this.dbUrl}/users.json${this.getAuthParams()}`
+    ).pipe(
+      switchMap(users => {
+        if (!users) return of(null);
+ 
+        const deleteRequests: Observable<any>[] = [];
+ 
+        Object.keys(users).forEach(userId => {
+          const books = users[userId]?.books;
+          if (!books) return;
+ 
+          Object.keys(books).forEach(bookId => {
+            if (books[bookId]?.catalogueBookId === catalogueBookId) {
+              deleteRequests.push(
+                this.http.delete(
+                  `${this.dbUrl}/users/${userId}/books/${bookId}.json${this.getAuthParams()}`
+                )
+              );
+            }
+          });
+        });
+ 
+        if (deleteRequests.length === 0) return of(null);
+        return forkJoin(deleteRequests);
+      }),
+      catchError(err => {
+        console.error('Greška pri brisanju iz korisničkih biblioteka:', err);
+        return of(null); // ne blokiramo brisanje iz kataloga ni ako ovo padne
+      })
+    );
+  }
+ 
   searchBooks(query: string): Observable<CatalogueBook[]> {
     return this.getBooks().pipe(
       map(books => books.filter(b =>
