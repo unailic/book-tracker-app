@@ -67,8 +67,6 @@ export class CatalogueService {
     return this.http.patch<CatalogueBook>(`${this.dbUrl}/catalogue/${id}.json${this.getAuthParams()}`, book);
   }
  
-  // Briše knjigu iz kataloga I sve reference na nju u korisničkim bibliotekama
-  // (cascade delete) — sprečava "duhove" sa nepostojećim catalogueBookId.
   deleteBook(id: string): Observable<void> {
     return this.removeFromAllUserLibraries(id).pipe(
       switchMap(() =>
@@ -77,8 +75,7 @@ export class CatalogueService {
     );
   }
  
-  // Prolazi kroz SVE korisnike, nalazi knjige čiji catalogueBookId
-  // odgovara obrisanoj knjizi iz kataloga, i briše ih iz biblioteka.
+
   private removeFromAllUserLibraries(catalogueBookId: string): Observable<any> {
     return this.http.get<{ [userId: string]: { books?: { [bookId: string]: { catalogueBookId?: string } } } }>(
       `${this.dbUrl}/users.json${this.getAuthParams()}`
@@ -108,7 +105,7 @@ export class CatalogueService {
       }),
       catchError(err => {
         console.error('Greška pri brisanju iz korisničkih biblioteka:', err);
-        return of(null); // ne blokiramo brisanje iz kataloga ni ako ovo padne
+        return of(null); 
       })
     );
   }

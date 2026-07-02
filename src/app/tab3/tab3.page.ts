@@ -28,11 +28,8 @@ export class Tab3Page {
   isEditingProfile = false;
   tempUsername = '';
   tempAvatarUrl = '';
-
-  // promena lozinke
-  isChangingPassword = false;
-  newPassword = '';
-  confirmPassword = '';
+  tempNewPassword = '';
+  tempConfirmPassword = '';
   passwordError = '';
 
   // statistike — samo za usera
@@ -87,69 +84,79 @@ export class Tab3Page {
   openEditProfile() {
     this.tempUsername = this.username;
     this.tempAvatarUrl = this.avatarUrl;
+    this.tempNewPassword = '';
+    this.tempConfirmPassword = '';
+    this.passwordError = '';
     this.isEditingProfile = true;
-    this.isChangingPassword = false;
   }
 
-  saveProfile() {
+  async saveProfile() {
+    this.passwordError = '';
+
+    // Ako je unesena lozinka — validiramo je
+    if (this.tempNewPassword) {
+      if (this.tempNewPassword.length < 6) {
+        this.passwordError = 'Lozinka mora imati najmanje 6 karaktera.';
+        return;
+      }
+      if (this.tempNewPassword !== this.tempConfirmPassword) {
+        this.passwordError = 'Lozinke se ne poklapaju.';
+        return;
+      }
+    }
+
     const token = this.authService.getToken();
     const userId = this.authService.getUserId();
     const role = this.isAdmin ? 'admin' : 'user';
+
+    // Sačuvaj profil
     const profile = { email: this.email, role, username: this.tempUsername, avatarUrl: this.tempAvatarUrl };
     this.http.patch(`${environment.firebaseDatabaseUrl}/users/${userId}/profile.json?auth=${token}`, profile)
-      .subscribe(() => {
+      .subscribe(async () => {
         this.username = this.tempUsername;
         this.avatarUrl = this.tempAvatarUrl;
-        this.isEditingProfile = false;
+
+        // Ako je unesena nova lozinka — menjamo je
+        if (this.tempNewPassword) {
+          const url = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${environment.firebaseApiKey}`;
+          
+            console.log('TOKEN:', token);
+  console.log('API KEY:', environment.firebaseApiKey);
+  console.log('LOZINKA:', this.tempNewPassword);
+          
+          this.http.post(url, {
+            idToken: token,
+            password: this.tempNewPassword,
+            returnSecureToken: true
+          }).subscribe({
+            next: async () => {
+              this.isEditingProfile = false;
+              const alert = await this.alertCtrl.create({
+                header: 'Uspešno',
+                message: 'Profil i lozinka su sačuvani.',
+                buttons: ['OK']
+              });
+              await alert.present();
+            },
+            error: async () => {
+              const alert = await this.alertCtrl.create({
+                header: 'Greška',
+                message: 'Profil je sačuvan, ali promena lozinke nije uspela.',
+                buttons: ['OK']
+              });
+              await alert.present();
+            }
+          });
+        } else {
+          this.isEditingProfile = false;
+          const alert = await this.alertCtrl.create({
+            header: 'Uspešno',
+            message: 'Profil je sačuvan.',
+            buttons: ['OK']
+          });
+          await alert.present();
+        }
       });
-  }
-
-  openChangePassword() {
-    this.isChangingPassword = true;
-    this.isEditingProfile = false;
-    this.newPassword = '';
-    this.confirmPassword = '';
-    this.passwordError = '';
-  }
-
-  async savePassword() {
-    // Validacija
-    if (this.newPassword.length < 6) {
-      this.passwordError = 'Lozinka mora imati najmanje 6 karaktera.';
-      return;
-    }
-    if (this.newPassword !== this.confirmPassword) {
-      this.passwordError = 'Lozinke se ne poklapaju.';
-      return;
-    }
-
-    // Firebase endpoint za promenu lozinke
-    const token = this.authService.getToken();
-    const url = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${environment.firebaseApiKey}`;
-
-    this.http.post(url, {
-      idToken: token,
-      password: this.newPassword,
-      returnSecureToken: true
-    }).subscribe({
-      next: async () => {
-        this.isChangingPassword = false;
-        const alert = await this.alertCtrl.create({
-          header: 'Uspešno',
-          message: 'Lozinka je promenjena.',
-          buttons: ['OK']
-        });
-        await alert.present();
-      },
-      error: async () => {
-        const alert = await this.alertCtrl.create({
-          header: 'Greška',
-          message: 'Promena lozinke nije uspela. Pokušajte ponovo.',
-          buttons: ['OK']
-        });
-        await alert.present();
-      }
-    });
   }
 
   getInitials(): string {

@@ -17,7 +17,6 @@ export class AuthService {
   private apiKey = environment.firebaseApiKey;
   private dbUrl = environment.firebaseDatabaseUrl;
  
-  // Token živi SAMO u memoriji — ne u localStorage
   private user?: User | null;
   private role: string = 'user';
  

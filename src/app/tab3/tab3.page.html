@@ -48,11 +48,11 @@
 
       <div class="input-group">
         <label class="input-label">Nova lozinka</label>
-        <input class="input-field" type="password" [(ngModel)]="newPassword" placeholder="Ostavite prazno ako ne menjate" />
+        <input class="input-field" type="password" [(ngModel)]="tempNewPassword" placeholder="Ostavite prazno ako ne menjate" />
       </div>
       <div class="input-group">
         <label class="input-label">Potvrdi novu lozinku</label>
-        <input class="input-field" type="password" [(ngModel)]="confirmPassword" placeholder="Ponovite novu lozinku" />
+        <input class="input-field" type="password" [(ngModel)]="tempConfirmPassword" placeholder="Ponovite novu lozinku" />
       </div>
 
       <p class="error-text" *ngIf="passwordError">{{ passwordError }}</p>
